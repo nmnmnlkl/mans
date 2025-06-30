@@ -103,6 +103,34 @@ This is a full-stack Arabic numerology (Jafr) analysis application that combines
 - **Session**: Secure session configuration for authentication
 - **CORS**: Configured for production domain access
 
+## Deployment Strategy
+
+### Development Environment
+- **Replit Integration**: Native Replit development support
+- **Hot Reloading**: Vite dev server with HMR
+- **Environment Variables**: Local .env configuration
+- **Database**: Development database connection
+
+### Production Deployment Options
+
+#### Netlify (Static + Serverless)
+- **Frontend**: Static build with Vite
+- **Backend**: Netlify Functions for API endpoints
+- **Database**: Not supported (history features disabled)
+- **Configuration**: netlify.toml and netlify/functions setup
+- **Features**: Jafr calculations, AI analysis, responsive UI
+
+#### Vercel (Full-Stack)
+- **Frontend**: Vite production build with optimization
+- **Backend**: Serverless functions with database support
+- **Database**: PostgreSQL connection with full history features
+- **Configuration**: vercel.json setup included
+
+### Environment Configuration
+- **AI API**: OpenRouter or OpenAI API key required for enhanced analysis
+- **Session**: Browser-based storage for API keys
+- **CORS**: Configured for cross-origin access
+
 ## Changelog
 
 ```
@@ -114,6 +142,8 @@ Changelog:
 - June 30, 2025. Integrated PostgreSQL database with Drizzle ORM
 - June 30, 2025. Added analysis history storage and retrieval functionality
 - June 30, 2025. Created History page with navigation for viewing saved analyses
+- June 30, 2025. Prepared Netlify deployment configuration with serverless functions
+- June 30, 2025. Created comprehensive deployment documentation for multiple platforms
 ```
 
 ## User Preferences
