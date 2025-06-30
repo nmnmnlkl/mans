@@ -22,10 +22,11 @@ This is a full-stack Arabic numerology (Jafr) analysis application that combines
 - **Development**: Hot module replacement with Vite middleware
 
 ### Data Storage Solutions
-- **Database**: PostgreSQL configured for production
+- **Database**: PostgreSQL with Neon serverless hosting
 - **ORM**: Drizzle ORM with PostgreSQL dialect
-- **Development Storage**: In-memory storage using Map data structure
+- **Storage Layer**: DatabaseStorage class implementing IStorage interface
 - **Session Management**: PostgreSQL sessions with connect-pg-simple
+- **Analysis History**: Complete Jafr analysis records stored with JSON fields
 - **Database Provider**: Neon serverless PostgreSQL
 
 ## Key Components
@@ -50,6 +51,8 @@ This is a full-stack Arabic numerology (Jafr) analysis application that combines
 - **Results Display**: Detailed analysis breakdown with visual elements
 - **Progress Tracking**: Real-time analysis progress indicators
 - **API Management**: Change API key functionality with validation
+- **History Page**: Browse and view all saved Jafr analysis records
+- **Navigation**: Modern navigation bar with active state indicators
 - **Responsive Design**: Mobile-first approach with RTL support
 
 ## Data Flow
@@ -108,6 +111,9 @@ Changelog:
 - June 30, 2025. Added OpenRouter API integration with client-side key management
 - June 30, 2025. Implemented API key validation and secure storage system
 - June 30, 2025. Added DeepSeek Chat v3 model for advanced Jafr analysis
+- June 30, 2025. Integrated PostgreSQL database with Drizzle ORM
+- June 30, 2025. Added analysis history storage and retrieval functionality
+- June 30, 2025. Created History page with navigation for viewing saved analyses
 ```
 
 ## User Preferences

@@ -4,6 +4,7 @@ import { z } from "zod";
 import { jafrAnalysisRequestSchema, type JafrAnalysisResponse, type TraditionalResults } from "@shared/schema";
 import { aiService } from "./services/ai-service";
 import { calculateBasicNumerology, calculateWafqSize, reduceToSingleDigit } from "../client/src/lib/jafr-utils";
+import { storage } from "./storage";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Test API Key Route
@@ -96,6 +97,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         apiKey
       );
 
+      // Save analysis to database
+      try {
+        const analysisData = {
+          userId: null, // For now, no user authentication
+          name: validatedData.name,
+          mother: validatedData.mother,
+          question: validatedData.question,
+          totalValue: traditionalResults.totalValue,
+          reducedValue: traditionalResults.reducedValue,
+          wafqSize: traditionalResults.wafqSize,
+          nameAnalysis: traditionalResults.nameAnalysis,
+          motherAnalysis: traditionalResults.motherAnalysis,
+          questionAnalysis: traditionalResults.questionAnalysis,
+          traditionalResults: traditionalResults,
+          aiAnalysis: aiAnalysis,
+          combinedInterpretation: combinedInterpretation,
+          aiEnabled: validatedData.options?.deepAnalysis !== false
+        };
+
+        await storage.saveJafrAnalysis(analysisData);
+      } catch (dbError) {
+        console.warn("Failed to save analysis to database:", dbError);
+        // Continue without failing the request
+      }
+
       const response: JafrAnalysisResponse = {
         traditionalResults,
         aiAnalysis,
@@ -116,6 +142,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       res.status(500).json({ 
         message: "حدث خطأ في التحليل. يرجى المحاولة مرة أخرى." 
+      });
+    }
+  });
+
+  // Get analysis history
+  app.get("/api/jafr/history", async (req, res) => {
+    try {
+      const analyses = await storage.getUserJafrAnalyses();
+      res.json(analyses);
+    } catch (error) {
+      console.error("Error fetching analysis history:", error);
+      res.status(500).json({ 
+        message: "حدث خطأ في جلب السجل. يرجى المحاولة مرة أخرى." 
+      });
+    }
+  });
+
+  // Get specific analysis
+  app.get("/api/jafr/analysis/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "معرف غير صحيح" });
+      }
+
+      const analysis = await storage.getJafrAnalysis(id);
+      if (!analysis) {
+        return res.status(404).json({ message: "التحليل غير موجود" });
+      }
+
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error fetching analysis:", error);
+      res.status(500).json({ 
+        message: "حدث خطأ في جلب التحليل. يرجى المحاولة مرة أخرى." 
       });
     }
   });
