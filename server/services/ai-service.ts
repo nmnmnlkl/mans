@@ -7,7 +7,7 @@ const openai = new OpenAI({
   apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || "your-api-key-here",
   defaultHeaders: {
     "HTTP-Referer": process.env.REPLIT_DOMAINS?.split(',')[0] || "http://localhost:5000",
-    "X-Title": "نظام الجفر الذكي المتقدم",
+    "X-Title": "Advanced Jafr Analysis System",
   },
 });
 
@@ -26,7 +26,7 @@ export class AIService {
         apiKey: apiKey,
         defaultHeaders: {
           "HTTP-Referer": process.env.REPLIT_DOMAINS?.split(',')[0] || "http://localhost:5000",
-          "X-Title": "نظام الجفر الذكي المتقدم",
+          "X-Title": "Advanced Jafr Analysis System",
         },
       }) : openai;
       
@@ -35,13 +35,22 @@ export class AIService {
         messages: [
           {
             role: "system",
-            content: `أنت خبير في علم الجفر والأعداد والتحليل الروحي العربي الإسلامي. قم بتحليل البيانات المقدمة وأعط تفسيراً شاملاً باللغة العربية. يجب أن تكون إجابتك في صيغة JSON مع الحقول التالية:
-            {
-              "spiritualInterpretation": "تفسير روحي شامل",
-              "numericalInsights": "تحليل الأرقام والمعاني العددية",
-              "guidance": "توجيهات وإرشادات للسائل",
-              "energyAnalysis": "تحليل الطاقات والاتجاهات"
-            }`
+            content: `أنت خبير متخصص في علم الجفر والأعداد والتحليل الروحي الإسلامي. مهمتك تقديم إجابات واضحة ومباشرة وصريحة للسائل بناءً على حساباته العددية وسؤاله المحدد.
+
+المطلوب منك:
+1. فهم السؤال المطروح بدقة والإجابة عليه مباشرة
+2. ربط الحسابات العددية بالسؤال المحدد
+3. تقديم إجابة صريحة ومفيدة عملياً
+4. تجنب العموميات والكلام المبهم
+5. التركيز على الجواب العملي للسؤال
+
+يجب أن تكون إجابتك في صيغة JSON مع الحقول التالية:
+{
+  "spiritualInterpretation": "إجابة مباشرة وصريحة على السؤال المطروح مع التفسير الروحي",
+  "numericalInsights": "كيف تدعم الأرقام المحسوبة الإجابة على السؤال",
+  "guidance": "توجيه عملي محدد للسائل حول سؤاله",
+  "energyAnalysis": "تحليل الطاقات المرتبطة بالسؤال والوضع الحالي"
+}`
           },
           {
             role: "user",
@@ -49,8 +58,8 @@ export class AIService {
           }
         ],
         response_format: { type: "json_object" },
-        temperature: 0.7,
-        max_tokens: 2000,
+        temperature: 0.3,
+        max_tokens: 3000,
       });
 
       const response = completion.choices[0].message.content;
@@ -80,50 +89,158 @@ export class AIService {
 
   private buildAnalysisPrompt(request: JafrAnalysisRequest, traditionalResults: TraditionalResults): string {
     return `
-قم بتحليل هذا الاستفسار الروحي بعمق وحكمة:
+السؤال المطروح: "${request.question}"
 
-البيانات الأساسية:
-- الاسم: ${request.name}
-- اسم الأم: ${request.mother}  
-- السؤال: ${request.question}
-
-النتائج العددية التقليدية:
-- قيمة الاسم العددية: ${traditionalResults.nameAnalysis.total}
-- قيمة اسم الأم العددية: ${traditionalResults.motherAnalysis.total}
+بيانات السائل:
+- الاسم: ${request.name} (قيمة عددية: ${traditionalResults.nameAnalysis.total})
+- اسم الأم: ${request.mother} (قيمة عددية: ${traditionalResults.motherAnalysis.total})
 - قيمة السؤال العددية: ${traditionalResults.questionAnalysis.total}
-- القيمة الإجمالية: ${traditionalResults.totalValue}
-- القيمة المختزلة: ${traditionalResults.reducedValue}
-- حجم الوفق المقترح: ${traditionalResults.wafqSize}×${traditionalResults.wafqSize}
+- المجموع الكلي: ${traditionalResults.totalValue}
+- الرقم المختزل: ${traditionalResults.reducedValue}
 
-يرجى تقديم تحليل شامل وعميق يشمل:
+مطلوب منك:
+1. فهم السؤال المطروح والإجابة عليه بوضوح وصراحة
+2. ربط الأرقام المحسوبة بالإجابة على السؤال المحدد
+3. تقديم توجيه عملي ومفيد للسائل
+4. تجنب الكلام العام وركز على السؤال المطروح
 
-1. التفسير الروحي: تفسير معمق للأسماء والسؤال من منظور روحي وعلم الأعداد، مع مراعاة الثقافة العربية الإسلامية
+أجب على السؤال مباشرة باستخدام علم الجفر والأرقام، واجعل إجابتك:
+- صريحة ومباشرة
+- مرتبطة بالسؤال المطروح
+- مبنية على الحسابات العددية
+- عملية ومفيدة للسائل
+- متوافقة مع القيم الإسلامية
 
-2. تحليل الأرقام: شرح تفصيلي لمعاني الأرقام المحسوبة وعلاقتها بحياة السائل وسؤاله
-
-3. التوجيه والإرشاد: نصائح عملية وتوجيهات حكيمة للسائل بناء على التحليل
-
-4. تحليل الطاقات: دراسة الطاقات المحيطة بالسؤال والاتجاهات المستقبلية
-
-تأكد من أن التحليل:
-- مناسب للثقافة العربية الإسلامية
-- يحترم التقاليد والقيم الدينية
-- يقدم فائدة حقيقية للسائل
-- يتجنب التنبؤات المطلقة ويركز على التوجيه الحكيم
-- يستخدم لغة عربية فصيحة وواضحة
+لا تعط إجابات عامة، بل أجب على السؤال المحدد الذي طرحه السائل.
     `;
   }
 
   private generateFallbackAnalysis(request: JafrAnalysisRequest, traditionalResults: TraditionalResults): AIAnalysis {
+    // Generate more specific fallback based on the question and numbers
+    const questionType = this.analyzeQuestionType(request.question);
+    const numericalGuidance = this.getNumericalGuidance(traditionalResults.reducedValue);
+    
     return {
-      spiritualInterpretation: `بناءً على الأسماء المقدمة والسؤال المطروح، نجد أن هناك طاقة روحية إيجابية تحيط بهذا الاستفسار. الاسم "${request.name}" يحمل في طياته معاني القوة والحكمة، بينما اسم الأم "${request.mother}" يضفي توازناً وحماية روحية. هذا المزيج يشير إلى شخصية متوازنة تسعى للفهم والنمو الروحي.`,
+      spiritualInterpretation: `بخصوص سؤالك: "${request.question}" - الحسابات العددية تُظهر أن اسمك "${request.name}" بقيمة ${traditionalResults.nameAnalysis.total} واسم أمك "${request.mother}" بقيمة ${traditionalResults.motherAnalysis.total} يشكلان توليفة عددية تدعم ${questionType.interpretation}. الرقم المختزل ${traditionalResults.reducedValue} يشير إلى ${numericalGuidance.meaning}.`,
       
-      numericalInsights: `القيمة العددية الإجمالية ${traditionalResults.totalValue} تشير إلى فترة مهمة في حياتك، حيث تتقاطع الخيارات والفرص. الرقم المختزل ${traditionalResults.reducedValue} يحمل رسالة خاصة عن ضرورة التوازن والصبر في هذه المرحلة. كل رقم في هذا التحليل يحمل معنى عميقاً يتصل بمسيرتك الحياتية وأهدافك الروحية.`,
+      numericalInsights: `المجموع الكلي ${traditionalResults.totalValue} والرقم المختزل ${traditionalResults.reducedValue} يدلان على ${numericalGuidance.insight}. هذا الرقم في سياق سؤالك يعني ${questionType.numericalAdvice}.`,
       
-      guidance: `ننصحك بالتأمل والصبر في هذا الوقت المهم. الوفق المقترح بحجم ${traditionalResults.wafqSize}×${traditionalResults.wafqSize} يمكن أن يكون وسيلة مفيدة للتركيز والتأمل الروحي. استمع إلى حدسك الداخلي واطلب الهداية من الله في اتخاذ قراراتك. تذكر أن الصبر والحكمة هما مفتاحا النجاح في أي مسعى.`,
+      guidance: `الإجابة على سؤالك تكمن في ${questionType.directAnswer}. الأرقام تنصحك بـ${numericalGuidance.action}. ${questionType.practicalAdvice}`,
       
-      energyAnalysis: `الطاقة المحيطة بسؤالك تشير إلى وجود تحولات إيجابية في الأفق. هناك توازن جميل بين الطاقات الذكورية والأنثوية في تحليلك، مما يدل على اكتمال وانسجام داخلي. استمر في طريقك مع الثقة بالله والتوكل عليه، فالخير قادم بإذن الله.`
+      energyAnalysis: `الطاقة المحيطة بـ${questionType.subject} ${questionType.energyReading}. الوقت الحالي ${numericalGuidance.timing} لاتخاذ خطوات في هذا الاتجاه.`
     };
+  }
+
+  private analyzeQuestionType(question: string): any {
+    const lowerQuestion = question.toLowerCase();
+    
+    if (lowerQuestion.includes('زواج') || lowerQuestion.includes('زوج') || lowerQuestion.includes('عريس')) {
+      return {
+        interpretation: 'الارتباط والزواج',
+        numericalAdvice: 'التوقيت المناسب للخطوات الجادة في العلاقات',
+        directAnswer: 'الصبر والدعاء مع اتخاذ الأسباب المناسبة',
+        practicalAdvice: 'ابحث عن الشخص المناسب واستشر أهل الخبرة.',
+        subject: 'الزواج',
+        energyReading: 'تشير إلى فرص إيجابية في المستقبل القريب'
+      };
+    } else if (lowerQuestion.includes('عمل') || lowerQuestion.includes('وظيف') || lowerQuestion.includes('مهن')) {
+      return {
+        interpretation: 'المسار المهني والعمل',
+        numericalAdvice: 'الوقت المناسب للتطوير المهني',
+        directAnswer: 'التركيز على تطوير المهارات والسعي للفرص',
+        practicalAdvice: 'استثمر في تعلم مهارات جديدة وتوسيع شبكة علاقاتك المهنية.',
+        subject: 'العمل',
+        energyReading: 'تدعم النمو والتقدم المهني'
+      };
+    } else if (lowerQuestion.includes('مال') || lowerQuestion.includes('رزق') || lowerQuestion.includes('ثرو')) {
+      return {
+        interpretation: 'الرزق والحالة المالية',
+        numericalAdvice: 'إمكانية تحسن الوضع المالي',
+        directAnswer: 'الاجتهاد في العمل مع التوكل على الله',
+        practicalAdvice: 'وضع خطة مالية واضحة والادخار بانتظام.',
+        subject: 'المال والرزق',
+        energyReading: 'تشير إلى فرص للتحسن المالي'
+      };
+    } else if (lowerQuestion.includes('صح') || lowerQuestion.includes('مرض') || lowerQuestion.includes('علاج')) {
+      return {
+        interpretation: 'الصحة والعافية',
+        numericalAdvice: 'الاهتمام بالصحة الجسدية والنفسية',
+        directAnswer: 'الالتزام بنمط حياة صحي والمتابعة الطبية',
+        practicalAdvice: 'اهتم بالتغذية السليمة والرياضة المنتظمة.',
+        subject: 'الصحة',
+        energyReading: 'تدعم التعافي والحفاظ على الصحة'
+      };
+    } else {
+      return {
+        interpretation: 'الموضوع المطروح',
+        numericalAdvice: 'النظر بعين الحكمة والصبر',
+        directAnswer: 'التأني والاستخارة قبل اتخاذ القرارات المهمة',
+        practicalAdvice: 'استشر أهل الخبرة واطلب الهداية من الله.',
+        subject: 'الأمر المسؤول عنه',
+        energyReading: 'متوازنة وتدعو للتفكير العميق'
+      };
+    }
+  }
+
+  private getNumericalGuidance(reducedNumber: number): any {
+    const guidance: Record<number, any> = {
+      1: { 
+        meaning: 'بداية جديدة وقيادة',
+        insight: 'وقت للمبادرة والخطوات الجديدة',
+        action: 'الثقة بالنفس واتخاذ زمام المبادرة',
+        timing: 'مناسب'
+      },
+      2: { 
+        meaning: 'التعاون والشراكة',
+        insight: 'أهمية العمل مع الآخرين',
+        action: 'البحث عن الشراكات والتعاون',
+        timing: 'يتطلب صبراً'
+      },
+      3: { 
+        meaning: 'الإبداع والتواصل',
+        insight: 'فرص للتعبير والإبداع',
+        action: 'استخدام المهارات الإبداعية',
+        timing: 'مثمر للمشاريع الإبداعية'
+      },
+      4: { 
+        meaning: 'النظام والاستقرار',
+        insight: 'الحاجة للتنظيم والعمل المنهجي',
+        action: 'وضع خطط واضحة والالتزام بها',
+        timing: 'يتطلب صبراً ومثابرة'
+      },
+      5: { 
+        meaning: 'التغيير والحرية',
+        insight: 'وقت للتغييرات الإيجابية',
+        action: 'الانفتاح على الفرص الجديدة',
+        timing: 'مناسب للتغيير'
+      },
+      6: { 
+        meaning: 'المسؤولية والانسجام',
+        insight: 'أهمية العائلة والعلاقات',
+        action: 'الاهتمام بالعلاقات الأسرية',
+        timing: 'مناسب للقرارات العائلية'
+      },
+      7: { 
+        meaning: 'الحكمة والروحانية',
+        insight: 'وقت للتأمل والبحث عن المعنى',
+        action: 'الاستعانة بالصلاة والتأمل',
+        timing: 'يتطلب تفكيراً عميقاً'
+      },
+      8: { 
+        meaning: 'القوة والإنجاز',
+        insight: 'فرص للنجاح المادي',
+        action: 'التركيز على الأهداف الكبيرة',
+        timing: 'مناسب للمشاريع الطموحة'
+      },
+      9: { 
+        meaning: 'الاكتمال والخدمة',
+        insight: 'وقت لإنهاء المراحل وبداية جديدة',
+        action: 'خدمة الآخرين والعطاء',
+        timing: 'نهاية مرحلة وبداية أخرى'
+      }
+    };
+    
+    return guidance[reducedNumber] || guidance[1];
   }
 
   async generateCombinedInterpretation(
@@ -160,7 +277,7 @@ export class AIService {
         apiKey: apiKey,
         defaultHeaders: {
           "HTTP-Referer": process.env.REPLIT_DOMAINS?.split(',')[0] || "http://localhost:5000",
-          "X-Title": "نظام الجفر الذكي المتقدم",
+          "X-Title": "Advanced Jafr Analysis System",
         },
       }) : openai;
 
