@@ -1,0 +1,134 @@
+import type { Express } from "express";
+import { createServer, type Server } from "http";
+import { z } from "zod";
+import { jafrAnalysisRequestSchema, type JafrAnalysisResponse, type TraditionalResults } from "@shared/schema";
+import { aiService } from "./services/ai-service";
+import { calculateBasicNumerology, calculateWafqSize, reduceToSingleDigit } from "../client/src/lib/jafr-utils";
+
+export async function registerRoutes(app: Express): Promise<Server> {
+  // Test API Key Route
+  app.post("/api/test-api-key", async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      
+      if (!apiKey || !apiKey.trim()) {
+        return res.status(400).json({ 
+          message: "مفتاح API مطلوب",
+          success: false 
+        });
+      }
+
+      // Test the API key with a simple request to OpenRouter
+      const testRequest = await fetch("https://openrouter.ai/api/v1/models", {
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json"
+        }
+      });
+
+      if (testRequest.ok) {
+        res.json({ 
+          message: "مفتاح API صحيح وجاهز للاستخدام",
+          success: true 
+        });
+      } else {
+        res.status(400).json({ 
+          message: "مفتاح API غير صحيح أو غير مفعل",
+          success: false 
+        });
+      }
+      
+    } catch (error) {
+      console.error("API key test error:", error);
+      res.status(500).json({ 
+        message: "حدث خطأ في التحقق من مفتاح API",
+        success: false 
+      });
+    }
+  });
+
+  // Jafr Analysis Route
+  app.post("/api/jafr/analyze", async (req, res) => {
+    try {
+      // Validate request body
+      const validatedData = jafrAnalysisRequestSchema.parse(req.body);
+      
+      // Perform traditional calculations
+      const traditionalResults: TraditionalResults = {
+        nameAnalysis: calculateBasicNumerology(validatedData.name),
+        motherAnalysis: calculateBasicNumerology(validatedData.mother),
+        questionAnalysis: calculateBasicNumerology(validatedData.question),
+        totalValue: 0,
+        reducedValue: 0,
+        wafqSize: 0
+      };
+
+      // Calculate total values
+      traditionalResults.totalValue = 
+        traditionalResults.nameAnalysis.total + 
+        traditionalResults.motherAnalysis.total + 
+        traditionalResults.questionAnalysis.total;
+        
+      traditionalResults.reducedValue = reduceToSingleDigit(traditionalResults.totalValue);
+      traditionalResults.wafqSize = calculateWafqSize(traditionalResults.totalValue);
+
+      // Get AI analysis if deep analysis is enabled
+      let aiAnalysis;
+      if (validatedData.options?.deepAnalysis !== false) {
+        // Use the API key from request body if provided
+        const apiKey = req.body.apiKey || process.env.OPENROUTER_API_KEY;
+        aiAnalysis = await aiService.analyzeJafrContext(validatedData, traditionalResults, apiKey);
+      } else {
+        // Fallback basic analysis
+        aiAnalysis = {
+          spiritualInterpretation: "تم تعطيل التحليل العميق. النتائج مبنية على الحسابات التقليدية فقط.",
+          numericalInsights: `القيمة الإجمالية ${traditionalResults.totalValue} تشير إلى معاني مهمة في حياتك.`,
+          guidance: "استخدم النتائج العددية للتأمل والتفكير في سؤالك.",
+          energyAnalysis: "الطاقات محايدة، اعتمد على حدسك الشخصي."
+        };
+      }
+
+      // Generate combined interpretation
+      const apiKey = req.body.apiKey || process.env.OPENROUTER_API_KEY;
+      const combinedInterpretation = await aiService.generateCombinedInterpretation(
+        traditionalResults, 
+        aiAnalysis,
+        apiKey
+      );
+
+      const response: JafrAnalysisResponse = {
+        traditionalResults,
+        aiAnalysis,
+        combinedInterpretation
+      };
+
+      res.json(response);
+      
+    } catch (error) {
+      console.error("Jafr analysis error:", error);
+      
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "بيانات غير صحيحة",
+          errors: error.errors.map(e => e.message)
+        });
+      }
+      
+      res.status(500).json({ 
+        message: "حدث خطأ في التحليل. يرجى المحاولة مرة أخرى." 
+      });
+    }
+  });
+
+  // Health check route
+  app.get("/api/health", (req, res) => {
+    res.json({ 
+      status: "healthy", 
+      service: "نظام الجفر الذكي المتقدم",
+      timestamp: new Date().toISOString()
+    });
+  });
+
+  const httpServer = createServer(app);
+  return httpServer;
+}
