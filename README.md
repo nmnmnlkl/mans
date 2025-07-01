@@ -65,4 +65,4 @@ npm run dev
 ### روابط مفيدة:
 - [OpenRouter API](https://openrouter.ai/) - للحصول على مفتاح API
 - [Netlify Functions](https://docs.netlify.com/functions/overview/) - دليل الوظائف
-- [Vercel](https://vercel.com/) - بديل يدعم قواعد البيانات
+- [Vercel](https://vercel.com/) - بديل يدعم قواعد البيانات# mans
